@@ -10,7 +10,7 @@ const model = defineModel<string>({ default: '' });
         v-model="model"
         class="field-input"
         type="search"
-        placeholder="Coba: kopi, hampers, frozen, skincare..."
+        placeholder="Cari nama atau deskripsi produk..."
         autocomplete="off"
       >
       <button
@@ -28,13 +28,13 @@ const model = defineModel<string>({ default: '' });
 <style scoped>
 .search-bar {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .search-bar__label {
-  font-size: 0.88rem;
-  color: var(--muted);
-  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--muted-strong);
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }

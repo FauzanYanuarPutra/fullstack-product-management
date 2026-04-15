@@ -3,13 +3,17 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
+use App\Filament\Resources\ProductResource\Widgets\ProductStatsOverview;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
+use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class ProductResource extends Resource
 {
@@ -19,7 +23,7 @@ class ProductResource extends Resource
 
     protected static ?string $navigationLabel = 'Katalog Produk';
 
-    protected static ?string $navigationGroup = 'Operasional';
+    protected static ?string $navigationGroup = 'Katalog';
 
     protected static ?string $modelLabel = 'produk';
 
@@ -31,26 +35,32 @@ class ProductResource extends Resource
     {
         return $form->schema([
             Forms\Components\Section::make('Informasi produk')
-                ->description('Lengkapi data inti yang akan tampil di frontend Nuxt dan API NestJS.')
+                ->description('Lengkapi data produk untuk admin, API, dan frontend.')
                 ->schema([
                     Forms\Components\TextInput::make('name')
                         ->label('Nama produk')
-                        ->placeholder('Contoh: Kopi Susu Literan')
-                        ->helperText('Gunakan nama yang mudah dikenali tim operasional dan penjualan.')
+                        ->placeholder('Contoh: Starter Kit Midnight')
+                        ->helperText('Gunakan nama yang mudah dicari saat katalog bertambah banyak.')
                         ->required()
                         ->maxLength(255),
                     Forms\Components\TextInput::make('price')
                         ->label('Harga')
                         ->required()
-                        ->numeric()
-                        ->minValue(0)
                         ->prefix('Rp')
-                        ->placeholder('25000'),
+                        ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                        ->stripCharacters('.')
+                        ->inputMode('numeric')
+                        ->rule('numeric')
+                        ->minValue(0)
+                        ->formatStateUsing(
+                            fn ($state): ?string => filled($state) ? number_format((float) $state, 0, ',', '.') : null,
+                        )
+                        ->placeholder('350.000'),
                     Forms\Components\Textarea::make('description')
                         ->label('Deskripsi')
                         ->required()
                         ->rows(6)
-                        ->placeholder('Tuliskan ringkasan produk, manfaat, ukuran, atau catatan stok.')
+                        ->placeholder('Tulis deskripsi singkat untuk katalog dan halaman detail.')
                         ->columnSpanFull(),
                 ])
                 ->columns(2),
@@ -63,7 +73,7 @@ class ProductResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->paginated([10, 25, 50])
             ->emptyStateHeading('Belum ada produk di katalog')
-            ->emptyStateDescription('Tambahkan produk pertama agar tim bisa mulai mengelola daftar produk dari panel ini.')
+            ->emptyStateDescription('Tambahkan produk pertama untuk mulai mengelola katalog dari panel ini.')
             ->emptyStateIcon('heroicon-o-shopping-bag')
             ->columns([
                 Tables\Columns\TextColumn::make('id')
@@ -71,22 +81,32 @@ class ProductResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama produk')
+                    ->weight(FontWeight::SemiBold)
+                    ->description(fn (Product $record): string => Str::limit($record->description, 84))
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('description')
                     ->label('Deskripsi')
                     ->limit(60)
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Harga')
                     ->sortable()
+                    ->badge()
+                    ->color('warning')
                     ->formatStateUsing(
                         fn ($state): string => 'Rp '.number_format((float) $state, 2, ',', '.'),
                     ),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d M Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\Filter::make('minimum_price')
@@ -94,8 +114,12 @@ class ProductResource extends Resource
                     ->form([
                         Forms\Components\TextInput::make('amount')
                             ->label('Harga minimum')
-                            ->numeric()
-                            ->minValue(0),
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->stripCharacters('.')
+                            ->inputMode('numeric')
+                            ->rule('numeric')
+                            ->minValue(0)
+                            ->placeholder('100.000'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
@@ -131,6 +155,13 @@ class ProductResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'description'];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            ProductStatsOverview::class,
+        ];
     }
 
     public static function getPages(): array

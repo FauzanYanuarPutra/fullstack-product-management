@@ -19,6 +19,19 @@ Recommended local runtime:
 - PostgreSQL 16
 - Docker / Docker Compose
 
+For the Laravel admin on Windows, make sure these PHP extensions are enabled in the CLI `php.ini`:
+
+- `intl`
+- `fileinfo`
+- `zip`
+- `pdo_pgsql`
+- `pgsql`
+
+Recommended development environment:
+
+- WSL2 / Linux shell for the smoothest setup
+- Native Windows is also possible, but requires Node.js 22, PHP 8.3, Composer, and Docker Desktop to be installed and available in `PATH`
+
 ## Scope assumptions
 
 - NestJS and Laravel are separate services connected to one PostgreSQL database.
@@ -81,35 +94,42 @@ CREATE TABLE products (
 
 ## Local development
 
+The commands below are the canonical setup flow. They work best in WSL2 / Linux.
+If you use native Windows, make sure `node`, `npm`, `php`, `composer`, and `docker` are already installed and working before running the same commands.
+
 ### 1. Start PostgreSQL
 
 ```bash
 docker-compose up -d
 ```
 
-### 2. API setup
+### 2. Node workspace setup
 
 ```bash
-cd apps/api
-cp .env.example .env
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
 npm install
-npm run start:dev
+```
+
+The repository uses one root `package-lock.json` for the npm workspaces (`apps/api` and `apps/web`).
+
+### 3. API setup
+
+```bash
+npm run dev:api
 ```
 
 API default URL: `http://localhost:3001`
 
-### 3. Frontend setup
+### 4. Frontend setup
 
 ```bash
-cd apps/web
-cp .env.example .env
-npm install
-npm run dev
+npm run dev:web
 ```
 
 Frontend default URL: `http://localhost:3000`
 
-### 4. Admin panel setup
+### 5. Admin panel setup
 
 ```bash
 cd apps/admin
@@ -173,8 +193,7 @@ Response:
 ### API
 
 ```bash
-cd apps/api
-npm run test
+npm run test:api
 ```
 
 ## CI/CD
@@ -203,6 +222,8 @@ The expected production shape is:
 
 - public Git repository
 - clear setup and local run instructions
+- root `package-lock.json`
+- `apps/admin/composer.lock`
 - Nuxt frontend matching the requested product flows
 - NestJS API with validation
 - Laravel Filament product CRUD
@@ -212,8 +233,8 @@ The expected production shape is:
 
 ## Notes
 
-- The environment used for this implementation does not have Composer, PHP, or installed npm dependencies available, so the repo was scaffolded directly rather than generated from framework CLIs.
 - The Laravel app files included here are the project-specific files needed for a standard Laravel 11 + Filament setup.
+- The repository includes one root `package-lock.json` for npm workspaces and one `apps/admin/composer.lock` for Laravel, so installs are reproducible.
 - Admin authentication is intentionally omitted because the brief only requires product CRUD, search, and filters.
 - If Filament assets ever return `404`, rerun `php artisan filament:upgrade`, then hard-refresh the browser.
 - The frontend visual direction intentionally follows a modern Indonesian product-commerce aesthetic aligned with the target company context, without cloning any proprietary branding or layouts.

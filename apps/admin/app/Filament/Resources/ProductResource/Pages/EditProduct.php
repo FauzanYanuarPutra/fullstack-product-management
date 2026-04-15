@@ -15,6 +15,11 @@ class EditProduct extends EditRecord
         return 'Ubah Produk';
     }
 
+    public function getSubheading(): ?string
+    {
+        return 'Perbarui nama, deskripsi, atau harga tanpa keluar dari workspace admin.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

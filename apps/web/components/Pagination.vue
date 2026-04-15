@@ -75,6 +75,11 @@ const goToPage = (page: number) => {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(16, 14, 18, 0.84);
+  box-shadow: var(--shadow);
 }
 
 .pagination__pages {
@@ -84,7 +89,8 @@ const goToPage = (page: number) => {
 }
 
 .page-chip--active {
-  color: #fffaf5;
+  color: #181215;
   border-color: transparent;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
 }
 </style>

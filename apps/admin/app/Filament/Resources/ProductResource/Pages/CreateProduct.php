@@ -13,4 +13,9 @@ class CreateProduct extends CreateRecord
     {
         return 'Tambah Produk';
     }
+
+    public function getSubheading(): ?string
+    {
+        return 'Lengkapi data produk dengan gaya input yang ringkas untuk operasional katalog.';
+    }
 }

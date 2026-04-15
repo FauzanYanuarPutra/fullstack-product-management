@@ -23,7 +23,7 @@ const formattedPrice = computed(() => {
 
     <section v-if="pending" class="empty-state">
       <h1 class="section-title">Memuat detail produk...</h1>
-      <p class="section-lead">Data sedang diambil dari API NestJS.</p>
+      <p class="section-lead">Data sedang diambil dari API.</p>
     </section>
 
     <section v-else-if="error || !product" class="empty-state">
@@ -34,14 +34,24 @@ const formattedPrice = computed(() => {
     </section>
 
     <section v-else class="detail-card">
+      <div class="detail-banner">
+        <p class="eyebrow">Detail produk</p>
+        <span class="detail-banner__pill">Terhubung ke API dan admin</span>
+      </div>
+
       <div class="detail-grid">
         <div>
-          <p class="eyebrow">Detail produk</p>
           <h1 class="detail-title">{{ product.name }}</h1>
           <p class="hero-copy detail-description">
             {{ product.description }}
           </p>
           <p class="detail-price">{{ formattedPrice }}</p>
+
+          <div class="detail-trust">
+            <span class="trust-item">Harga Rupiah</span>
+            <span class="trust-item">Waktu sinkron</span>
+            <span class="trust-item">Data yang sama</span>
+          </div>
         </div>
 
         <aside class="detail-side">
@@ -60,7 +70,7 @@ const formattedPrice = computed(() => {
 
           <span class="stat-label">Catatan</span>
           <p class="stat-value stat-value--muted">
-            Data ini sinkron dengan katalog frontend dan panel admin Filament.
+            Data ini sama dengan yang tampil di katalog dan admin Filament.
           </p>
         </aside>
       </div>

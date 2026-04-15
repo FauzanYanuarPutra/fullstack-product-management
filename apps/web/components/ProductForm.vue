@@ -4,6 +4,7 @@ const emit = defineEmits<{
 }>();
 
 const { createProduct } = useProducts();
+const { formatPriceInput, parsePriceInput } = useDisplay();
 
 const form = reactive({
   name: '',
@@ -21,6 +22,12 @@ const resetForm = () => {
   form.price = '';
 };
 
+const handlePriceInput = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+
+  form.price = formatPriceInput(target.value);
+};
+
 const submit = async () => {
   loading.value = true;
   error.value = '';
@@ -30,7 +37,7 @@ const submit = async () => {
     await createProduct({
       name: form.name.trim(),
       description: form.description.trim(),
-      price: Number(form.price),
+      price: parsePriceInput(form.price),
     });
 
     resetForm();
@@ -49,11 +56,10 @@ const submit = async () => {
 
 <template>
   <section class="panel panel--sticky">
-    <p class="eyebrow">Input cepat</p>
-    <h2 class="panel-title">Tambah produk baru</h2>
+    <p class="eyebrow eyebrow--soft">Tambah produk</p>
+    <h2 class="panel-title">Tambah produk</h2>
     <p class="section-lead">
-      Form ini langsung mengirim data ke API NestJS, jadi katalog di sebelah kanan
-      akan ikut terbarui tanpa pindah halaman.
+      Isi data produk lalu simpan. Hasilnya akan langsung masuk ke katalog.
     </p>
 
     <form class="form-stack" @submit.prevent="submit">
@@ -65,9 +71,9 @@ const submit = async () => {
           maxlength="255"
           required
           type="text"
-          placeholder="Contoh: Paket Frozen Food Hemat"
+          placeholder="Contoh: Starter Kit Midnight"
         >
-        <span class="field-hint">Nama singkat yang jelas akan lebih mudah dicari tim.</span>
+        <span class="field-hint">Gunakan nama yang mudah dicari.</span>
       </label>
 
       <label class="field">
@@ -76,27 +82,29 @@ const submit = async () => {
           v-model="form.description"
           class="field-textarea"
           required
-          placeholder="Tuliskan isi produk, ukuran, manfaat, atau catatan penting untuk pembeli."
+          placeholder="Tulis deskripsi singkat produk."
         ></textarea>
-        <span class="field-hint">Deskripsi ini akan tampil di daftar dan halaman detail.</span>
+        <span class="field-hint">Deskripsi ini tampil di katalog dan halaman detail.</span>
       </label>
 
       <label class="field">
         <span class="field-label">Harga</span>
         <input
-          v-model="form.price"
+          :value="form.price"
           class="field-input"
-          min="0"
+          autocomplete="off"
+          inputmode="numeric"
+          pattern="[0-9.]*"
           required
-          step="0.01"
-          type="number"
-          placeholder="25000"
+          type="text"
+          placeholder="350.000"
+          @input="handlePriceInput"
         >
-        <span class="field-hint">Masukkan angka saja. Tampilan pengguna akan otomatis diformat ke Rupiah.</span>
+        <span class="field-hint">Angka akan otomatis dipisah per ribuan supaya lebih mudah dibaca.</span>
       </label>
 
       <button class="button" :disabled="loading" type="submit">
-        {{ loading ? 'Menyimpan produk...' : 'Simpan produk' }}
+        {{ loading ? 'Menyimpan...' : 'Simpan produk' }}
       </button>
 
       <p v-if="success" class="status status--success">{{ success }}</p>

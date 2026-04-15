@@ -10,40 +10,31 @@ default:
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
+    - node_modules/
     - apps/api/node_modules/
     - apps/web/node_modules/
     - apps/admin/vendor/
 
-install_api:
+install_node:
   stage: install
   image: node:22
   script:
-    - cd apps/api
-    - npm install
-
-install_web:
-  stage: install
-  image: node:22
-  script:
-    - cd apps/web
-    - npm install
+    - npm ci
 
 test_api:
   stage: test
   image: node:22
   script:
-    - cd apps/api
-    - npm install
-    - npm run lint
-    - npm run test -- --passWithNoTests
+    - npm ci
+    - npm run lint:api
+    - npm run test:api -- --passWithNoTests
 
 build_api:
   stage: build
   image: node:22
   script:
-    - cd apps/api
-    - npm install
-    - npm run build
+    - npm ci
+    - npm run build:api
   artifacts:
     paths:
       - apps/api/dist
@@ -52,9 +43,8 @@ build_web:
   stage: build
   image: node:22
   script:
-    - cd apps/web
-    - npm install
-    - npm run build
+    - npm ci
+    - npm run build:web
   artifacts:
     paths:
       - apps/web/.output

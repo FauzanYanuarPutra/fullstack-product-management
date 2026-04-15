@@ -1,4 +1,27 @@
 export const useDisplay = () => {
+  const sanitizePriceInput = (value: string | number) =>
+    String(value ?? '').replace(/[^\d]/g, '');
+
+  const formatPriceInput = (value: string | number) => {
+    const digits = sanitizePriceInput(value);
+
+    if (!digits) {
+      return '';
+    }
+
+    return Number(digits).toLocaleString('id-ID');
+  };
+
+  const parsePriceInput = (value: string | number) => {
+    const digits = sanitizePriceInput(value);
+
+    if (!digits) {
+      return 0;
+    }
+
+    return Number(digits);
+  };
+
   const formatPrice = (value: string | number) => {
     const amount = Number(value);
     const hasDecimals = !Number.isInteger(amount);
@@ -18,8 +41,9 @@ export const useDisplay = () => {
     }).format(new Date(value));
 
   return {
+    formatPriceInput,
     formatPrice,
     formatDateTime,
+    parsePriceInput,
   };
 };
-

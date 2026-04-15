@@ -5,6 +5,7 @@ const searchInput = ref('');
 const appliedSearch = ref('');
 const page = ref(1);
 const limit = ref(10);
+const popularSearches = ['starter', 'kit', 'bundle', 'limited'];
 
 let debounceHandle: ReturnType<typeof setTimeout> | undefined;
 
@@ -48,93 +49,90 @@ const meta = computed(() => ({
 const activeLabel = computed(() =>
   appliedSearch.value
     ? `Hasil pencarian untuk "${appliedSearch.value}"`
-    : 'Semua produk terbaru',
+    : 'Semua produk',
 );
-
-const statCards = computed(() => [
-  {
-    label: 'Total produk',
-    value: meta.value.total.toLocaleString('id-ID'),
-    note: appliedSearch.value ? 'produk cocok dengan pencarian aktif' : 'produk tersimpan di katalog',
-  },
-  {
-    label: 'Halaman aktif',
-    value: `${meta.value.page}/${meta.value.totalPages}`,
-    note: 'navigasi daftar produk',
-  },
-  {
-    label: 'Mode tampilan',
-    value: appliedSearch.value ? 'Tersaring' : 'Penuh',
-    note: appliedSearch.value ? 'daftar sedang dipersempit keyword' : 'seluruh katalog sedang ditampilkan',
-  },
-]);
 
 const searchSummary = computed(() =>
   appliedSearch.value
-    ? `Keyword aktif: "${appliedSearch.value}"`
-    : 'Belum ada filter pencarian. Semua produk akan ditampilkan.',
+    ? `Menampilkan hasil untuk kata kunci "${appliedSearch.value}".`
+    : 'Semua produk ditampilkan.',
+);
+
+const resultSummary = computed(() =>
+  appliedSearch.value
+    ? `${meta.value.total.toLocaleString('id-ID')} hasil ditemukan`
+    : `${meta.value.total.toLocaleString('id-ID')} produk di katalog`,
 );
 
 const handleCreated = async () => {
   page.value = 1;
   await refresh();
 };
+
+const applySearchPreset = (term: string) => {
+  searchInput.value = term;
+};
 </script>
 
 <template>
-  <main class="page-shell">
-    <section class="hero hero--market">
-      <div class="hero-copy-stack">
-        <p class="eyebrow">Katalog digital</p>
-        <h1>Kelola katalog produk dengan rasa dashboard yang cocok untuk tim Indonesia.</h1>
-        <p class="hero-copy">
-          Halaman ini menampilkan daftar produk dari API NestJS, mendukung pencarian
-          server-side, pagination, detail produk, dan input produk baru dalam satu alur
-          yang cepat dipakai tim operasional maupun owner.
+  <main class="page-shell page-shell--catalog">
+    <section class="panel panel--compact catalog-topbar">
+      <div class="catalog-topbar__copy">
+        <p class="eyebrow eyebrow--soft">Katalog produk</p>
+        <h1 class="catalog-title">Cari dan tambah produk tanpa banyak pindah halaman.</h1>
+        <p class="section-lead section-lead--compact">
+          Search, daftar produk, dan form utama diprioritaskan supaya lebih cepat dipakai.
         </p>
-        <div class="hero-chips">
-          <span class="hero-chip">Pencarian cepat</span>
-          <span class="hero-chip">Form input langsung</span>
-          <span class="hero-chip">Tampilan mobile-friendly</span>
-        </div>
       </div>
 
-      <div class="hero-spotlight">
-        <p class="hero-spotlight__eyebrow">Ringkasan hari ini</p>
-        <h2>{{ activeLabel }}</h2>
-        <p>{{ searchSummary }}</p>
-        <div class="hero-spotlight__footer">
-          <span>API: NestJS</span>
-          <span>Admin: Filament</span>
-          <span>DB: PostgreSQL</span>
-        </div>
+      <div class="catalog-topbar__actions">
+        <a class="button-secondary" href="#catalog-search">Cari produk</a>
+        <a class="button" href="#catalog-form">Tambah produk</a>
       </div>
     </section>
 
-    <section class="stats-grid">
-      <article v-for="stat in statCards" :key="stat.label" class="stat-card">
-        <p class="stat-card__label">{{ stat.label }}</p>
-        <strong class="stat-card__value">{{ stat.value }}</strong>
-        <span class="stat-card__note">{{ stat.note }}</span>
-      </article>
-    </section>
-
-    <section class="layout-grid">
-      <ProductForm @created="handleCreated" />
-
+    <section class="layout-grid layout-grid--catalog">
       <div class="results-stack">
-        <section class="panel">
+        <section id="catalog-search" class="panel panel--search">
+          <div class="results-header results-header--compact">
+            <div>
+              <p class="eyebrow eyebrow--soft">Pencarian</p>
+              <h2 class="section-title">{{ activeLabel }}</h2>
+              <p class="section-lead section-lead--compact">{{ resultSummary }}</p>
+            </div>
+            <p class="meta-line">Halaman {{ meta.page }}/{{ meta.totalPages }}</p>
+          </div>
+
           <SearchBar v-model="searchInput" />
+
+          <div class="search-presets">
+            <span class="search-presets__label">Coba cepat</span>
+            <div class="hero-chips">
+              <button
+                v-for="term in popularSearches"
+                :key="term"
+                :class="[
+                  'hero-chip',
+                  'hero-chip--interactive',
+                  { 'hero-chip--active': searchInput === term },
+                ]"
+                type="button"
+                @click="applySearchPreset(term)"
+              >
+                {{ term }}
+              </button>
+            </div>
+          </div>
         </section>
 
         <section class="panel">
           <div class="results-header">
             <div>
-              <p class="eyebrow">Katalog</p>
+              <p class="eyebrow eyebrow--soft">Daftar produk</p>
               <h2 class="section-title">{{ activeLabel }}</h2>
               <p class="section-lead section-lead--compact">{{ searchSummary }}</p>
             </div>
-            <p class="meta-line">{{ meta.total.toLocaleString('id-ID') }} produk ditemukan</p>
+            <p class="meta-line">{{ meta.total.toLocaleString('id-ID') }} produk</p>
           </div>
 
           <p v-if="pending" class="meta-line">Memuat produk dari server...</p>
@@ -151,7 +149,7 @@ const handleCreated = async () => {
           <div v-else class="empty-state">
             <h3 class="section-title">Belum ada produk yang cocok.</h3>
             <p class="section-lead">
-              Coba kata kunci lain atau tambahkan produk baru lewat form di sisi kiri.
+              Coba kata kunci lain atau tambah produk baru dari form di kiri.
             </p>
           </div>
         </section>
@@ -161,6 +159,10 @@ const handleCreated = async () => {
           :total-pages="meta.totalPages"
           @change="page = $event"
         />
+      </div>
+
+      <div id="catalog-form" class="catalog-form-shell">
+        <ProductForm @created="handleCreated" />
       </div>
     </section>
   </main>
