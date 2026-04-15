@@ -1,0 +1,87 @@
+stages:
+  - install
+  - test
+  - build
+  - deploy
+
+default:
+  interruptible: true
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - apps/api/node_modules/
+    - apps/web/node_modules/
+    - apps/admin/vendor/
+
+install_api:
+  stage: install
+  image: node:22
+  script:
+    - cd apps/api
+    - npm install
+
+install_web:
+  stage: install
+  image: node:22
+  script:
+    - cd apps/web
+    - npm install
+
+test_api:
+  stage: test
+  image: node:22
+  script:
+    - cd apps/api
+    - npm install
+    - npm run lint
+    - npm run test -- --passWithNoTests
+
+build_api:
+  stage: build
+  image: node:22
+  script:
+    - cd apps/api
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - apps/api/dist
+
+build_web:
+  stage: build
+  image: node:22
+  script:
+    - cd apps/web
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - apps/web/.output
+
+build_admin:
+  stage: build
+  image: php:8.3-cli
+  before_script:
+    - apt-get update && apt-get install -y unzip git curl libpq-dev
+    - docker-php-ext-install pdo pdo_pgsql
+    - curl -sS https://getcomposer.org/installer | php
+    - mv composer.phar /usr/local/bin/composer
+  script:
+    - cd apps/admin
+    - composer install --no-interaction --prefer-dist --optimize-autoloader
+    - php artisan filament:upgrade --ansi
+
+deploy_production:
+  stage: deploy
+  image: alpine:latest
+  only:
+    - main
+  script:
+    - echo "Deployment is documented only for this technical test."
+    - echo "1. SSH into the DigitalOcean droplet or trigger the target release job."
+    - echo "2. Pull the latest main branch."
+    - echo "3. Install Node and Composer dependencies."
+    - echo "4. Run Laravel migrations against PostgreSQL."
+    - echo "5. Restart NestJS, PHP-FPM, and the web server."
+    - echo "6. Reload Nginx and verify health endpoints."

@@ -115,9 +115,8 @@ Frontend default URL: `http://localhost:3000`
 cd apps/admin
 cp .env.example .env
 composer install
-php artisan filament:install --panels
-php artisan filament:upgrade
 php artisan key:generate
+php artisan filament:upgrade
 php artisan migrate
 php artisan serve
 ```
@@ -216,5 +215,5 @@ The expected production shape is:
 - The environment used for this implementation does not have Composer, PHP, or installed npm dependencies available, so the repo was scaffolded directly rather than generated from framework CLIs.
 - The Laravel app files included here are the project-specific files needed for a standard Laravel 11 + Filament setup.
 - Admin authentication is intentionally omitted because the brief only requires product CRUD, search, and filters.
-- If Filament assets ever return `404`, rerun `php artisan filament:install --panels` and `php artisan filament:upgrade`, then hard-refresh the browser.
+- If Filament assets ever return `404`, rerun `php artisan filament:upgrade`, then hard-refresh the browser.
 - The frontend visual direction intentionally follows a modern Indonesian product-commerce aesthetic aligned with the target company context, without cloning any proprietary branding or layouts.
